@@ -1,0 +1,149 @@
+@font-face {
+  font-family: OpenSans;
+  src: url('/fonts/OpenSans-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: Raleway;
+  src: url('/fonts/Raleway-Light.ttf') format('truetype');
+  font-weight:normal;
+}
+@font-face {
+  font-family: Raleway;
+  src: url('/fonts/Raleway-Regular.ttf') format('truetype');
+  font-weight:bold;
+}
+
+/*
+Colors
+
+Grey Dark White
+#fcfcfc
+#EFEFEF
+#333
+#FDFDFD
+
+Pink Dark Yellow
+#f19e8e
+#f6688e
+#f8d561
+*/
+
+body{
+  font-family: Raleway;
+  color: #333;
+  background-color: #FDFDFD;
+  margin: 0px;
+}
+
+a{
+  transition: all ease-in-out 0.4s;
+  text-decoration: none;
+  color: inherit;
+}
+
+a:hover{
+  color: #9e9e9e;
+  text-decoration: none;
+}
+
+.wrapper{
+  margin: 0px auto 0px auto;
+  padding: 0px 0px 0px 0px;
+
+  max-width: 882px;
+  background-color: #fcfcfc;
+  border-right: 1px solid #EFEFEF;
+  border-left: 1px solid #EFEFEF;
+  cursor: default;
+}
+
+@media(max-width: 964px) {
+  .wrapper{width: calc(100% - 66px)}
+}
+
+@media(max-width: 675px) {
+  .wrapper{width: calc(100% - 26px)}
+}
+
+.header{
+  overflow: hidden;
+  padding: 120px 40px 30px 40px;
+  background-color: #f9f9f9;
+}
+
+.h_title{
+  font-size: 52px;
+  text-align: center;
+}
+
+.footer{
+  overflow: hidden;
+  padding: 30px 40px;
+  text-align: center;
+  background-color: #f9f9f9;
+}
+
+.content{
+  overflow: hidden;
+  padding: 30px 40px;
+  height: calc(100% - 312px);
+  min-height: 200px;
+}
+
+@media(max-width: 900px) {
+  .content{padding: 30px 16px;}
+}
+
+.console{
+  padding: 10px;
+  /*background-color: #f19e8e;*/
+}
+
+.console_log{
+  padding: 10px;
+  height: 300px;
+  /*background-color: #333;*/
+  border: solid 1px #EFEFEF;
+  border-radius: 4px;
+  overflow-y: scroll;
+  vertical-align: bottom;
+}
+
+.log_line{
+  overflow: hidden;
+  padding: 4px;
+}
+
+.console_input{
+  margin-top: 10px;
+  width: 100%;
+  /*background-color: #333;*/
+  border: solid 1px #EFEFEF;
+  border-radius: 4px;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+  outline: none;
+}
+
+.input_text{
+  border-style: none;
+  width: calc(100% - 100px);
+  padding: 10px;
+}
+
+.input_submit{
+  border-color: #EFEFEF;
+  width: 100px;
+  padding: 10px;
+  /*background-color: #f9f9f9;*/
+  background-image: linear-gradient(#f9f9f9, #EFEFEF);
+  border-width: 0px;
+}
+
+.input_submit:active{
+  background-image: linear-gradient(#EFEFEF, #f9f9f9);
+}
