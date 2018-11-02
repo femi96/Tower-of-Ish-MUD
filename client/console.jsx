@@ -17,6 +17,7 @@ class ClientConsole extends React.Component {
     // Setup form handle functions
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleEventFromServer = this.handleEventFromServer.bind(this);
 
     // Setup socket
     // this.socket = new WebSocket('wss://echo.websocket.org');
@@ -26,18 +27,12 @@ class ClientConsole extends React.Component {
     // Socket on open
     this.socket.onopen = function (event) {
       console.log("Connected");
-      this.send("Ping"); 
+      // this.send("Ping"); 
     };
 
     // Socket on receive message
-    this.socket.onmessage = function (event) { 
-      console.log(event.data);
-      /*
-      this.setState({
-        messages : this.state.messages.concat([ evt.data ])
-      })
-      */
-    };
+    var handleEventFromServer = this.handleEventFromServer;
+    this.socket.onmessage = handleEventFromServer;
 
     // Socket on error
     this.socket.onerror = function (error) {
@@ -57,10 +52,22 @@ class ClientConsole extends React.Component {
       return;
     }
 
+    // Send input to server
+    this.socket.send(this.state.value);
+
     // Add input to log then reset input
     this.setState({
-      log: this.state.log.concat([this.state.value]),
+      log: this.state.log.concat(["> " + this.state.value]),
       value: '',
+    }, this.scrollToBottom);
+  }
+
+  handleEventFromServer(event) {
+    console.log(event.data);
+
+    // Add message to log
+    this.setState({
+      log: this.state.log.concat([event.data]),
     }, this.scrollToBottom);
   }
 
@@ -72,7 +79,7 @@ class ClientConsole extends React.Component {
 
     // Create log lines
     const logItems = this.state.log.map((entry, index) =>
-      <div className="log_line" key={index.toString()}>> {entry}</div>
+      <div className="log_line" key={index.toString()}>{entry}</div>
     );
 
     // Return console

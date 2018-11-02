@@ -34,20 +34,28 @@ list_of_clients = []
 
 def remove(connection):
     """
-    The following function simply removes the object
-    from the list that was created at the beginning of
-    the program
+    Removes the connection object from the list_of_clients
     """
     if connection in list_of_clients:
         addr = "<" + str(connection.remote_address) + "> "
         print("Remove: ", addr)
         list_of_clients.remove(connection)
 
+
+async def broadcast(message, connection):
+    """
+    Broadcast message to all clients not the same as the sender
+    """
+    for client in list_of_clients:
+        if client != connection:
+            await client.send(message)
+
 async def client_coroutine(connection, path):
 
     # Setup server for client coroutine
     list_of_clients.append(connection)
     addr = "<" + str(connection.remote_address) + "> "
+    print("Connected: ", addr)
 
     while True:
         try:
@@ -61,7 +69,7 @@ async def client_coroutine(connection, path):
                 # Calls broadcast function to send message to all
                 # broadcast(message_to_send, conn)
                 response = message_to_send
-                await connection.send(response)
+                await broadcast(response, connection)
 
         except:
             # Raised connection closed:
@@ -120,22 +128,6 @@ increased as per convenience.
 
 #         except:
 #             continue
-
-
-# def broadcast(message, connection):
-#     """Using the below function, we broadcast the message to all
-#     clients who's object is not the same as the one sending
-#     the message """
-#     for clients in list_of_clients:
-#         if clients != connection:
-#             try:
-#                 clients.send(message)
-#             except:
-#                 clients.close()
-
-#                 # if the link is broken, we remove the client
-#                 remove(clients)
-
 
 # while True:
 
