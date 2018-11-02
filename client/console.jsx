@@ -19,7 +19,8 @@ class ClientConsole extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
 
     // Setup socket
-    this.socket = new WebSocket('wss://echo.websocket.org');
+    // this.socket = new WebSocket('wss://echo.websocket.org');
+    this.socket = new WebSocket('ws://localhost:8000');
     console.log("Try to Connect");
 
     // Socket on open
@@ -36,6 +37,11 @@ class ClientConsole extends React.Component {
         messages : this.state.messages.concat([ evt.data ])
       })
       */
+    };
+
+    // Socket on error
+    this.socket.onerror = function (error) {
+      console.log(error);
     };
   }
 
