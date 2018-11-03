@@ -12,8 +12,8 @@ To run this on your local machine, allowing same computer connections:
 
 For windows 10, or other bat compatible systems:
 - Download the project
-- Run `server/run.bat` to start the python server
-- Run `client/run.bat` to start the webserver
+- Run `/server/run.bat` to start the python server
+- Run `/client/run.bat` to start the webserver
 - Connect to `http://localhost:8080/` to open the web client
 
 
