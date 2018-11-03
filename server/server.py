@@ -3,6 +3,8 @@ import sys
 import asyncio
 import websockets
 
+import game.game as g
+
 # checks whether sufficient arguments have been provided
 if len(sys.argv) != 3:
     print("Correct usage: script.py, IP address, port number")
