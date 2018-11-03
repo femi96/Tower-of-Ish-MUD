@@ -17,71 +17,100 @@ IP_address = str(sys.argv[1])
 Port = int(sys.argv[2])
 
 
-class Server():
+class GameServer():
 
     def __init__(self):
         """
-        Constructor for server
+        Constructor for game server
 
         Asynch threadsafety via monitor pattern
 
-        Server contains a list of clients connected to the server
+        GameServer contains client connections and game instance
+            clients are in dictionary, mapping username to websocket connection
         """
         self.lock = asyncio.Lock()
-        self.list_of_clients = []
+        self.client_connections = dict()
+        self.game = g.Game()
 
-    async def add_client(self, client):
+    async def add_client(self, clientName, clientConnection):
         """
-        Add the client connection object to the Server
+        Add the client connection object to the GameServer
         """
         async with self.lock:
-            addr = "<" + str(client.remote_address) + "> "
-            print("Added: ", addr)
-            self.list_of_clients.append(client)
+            if clientName not in self.client_connections:
+                print("Added: ", clientName)
+                self.client_connections[clientName] = clientConnection
+                return True
+            else:
+                print("Add rejected: ", clientName)
+                return False
 
-    async def remove(self, client):
+    async def remove(self, clientName):
         """
-        Removes the connection object from the Server
+        Removes the connection object from the GameServer
         """
         async with self.lock:
-            if client in self.list_of_clients:
-                addr = "<" + str(client.remote_address) + "> "
-                print("Removed: ", addr)
-                self.list_of_clients.remove(client)
+            if clientName in self.client_connections:
+                print("Removed: ", clientName)
+                del self.client_connections[clientName]
 
-    async def broadcast(self, message, src):
+    async def broadcast(self, message, clientName):
         """
         Broadcast message to all clients not the same as the src
         """
         async with self.lock:
             print(message)
-            for client in self.list_of_clients:
-                if client != src:
-                    await client.send(message)
+            for client in self.client_connections:
+                if client != clientName:
+                    await self.client_connections[client].send(message)
 
-server = Server()
+server = GameServer()
 
-async def client_coroutine(connection, path):
+async def client_coroutine(client, path):
+    """
+    Takes client websocket connection and processes inputs
+    """
 
-    # Setup server for client coroutine
-    await server.add_client(connection)
-    addr = "<" + str(connection.remote_address) + "> "
+    # Setup GameServer for client coroutine
 
-    while True:
+    added_to_server = False
+    username = None
+
+    while not added_to_server:
+        await client.send("What is your desired username?")
+
         try:
-
-            message = await connection.recv()
+            message = await client.recv()
             if message:
-                # Calls broadcast function to send message to all
-                # broadcast(message_to_send, conn)
-                message_to_send = addr + str(message)
-                await server.broadcast(message_to_send, connection)
+                # Try to add connection as username to client
+                username = str(message)
+                added_to_server = await server.add_client(username, client)
+                if added_to_server:
+                    await client.send("Username accepted!")
+                else:
+                    await client.send("Username is taken...")
 
         except Exception as e:
             # Raised exception or connection closed:
             #   remove connection from list and end async thread
             print(e)
-            await server.remove(connection)
+            return
+
+    # Receive messages and send to GameServer
+    while True:
+        try:
+            message = await client.recv()
+            if message:
+                # Calls broadcast function to send message to all
+                #   broadcast(message_to_send, conn)
+                message_to_send = username + ": " + str(message)
+                await server.broadcast(message_to_send, username)
+
+        except Exception as e:
+            # Raised exception or connection closed:
+            #   remove connection from list and end async thread
+            print(e)
+            await server.remove(username)
             return
 
 # Start websockets server with client coroutine
