@@ -47,24 +47,47 @@ class GameServer():
                 print("Add rejected: ", clientName)
                 return False
 
-    async def remove(self, clientName):
+    async def remove_client(self, clientName):
         """
-        Removes the connection object from the GameServer
+        Removes the client connection object from the GameServer
         """
         async with self.lock:
             if clientName in self.client_connections:
                 print("Removed: ", clientName)
                 del self.client_connections[clientName]
 
-    async def broadcast(self, message, clientName):
+    async def input_to_game(self, clientName, message):
         """
-        Broadcast message to all clients not the same as the src
+        Send message to game, get immediate responses
         """
         async with self.lock:
-            print(message)
-            for client in self.client_connections:
-                if client != clientName:
-                    await self.client_connections[client].send(message)
+            message_to_print = clientName + "> " + str(message)
+            print(message_to_print)
+
+            game_responses = self.game.input(clientName, message)
+
+            await self.send_responses(game_responses)
+
+    async def get_game_updates(self):
+        """
+        Get updates from game as responses
+        """
+        async with self.lock:
+            game_responses = self.game.update()
+
+            await self.send_responses(game_responses)
+
+    async def send_responses(self, game_responses):
+        """
+        Takes list of game responses, sends response messages to respective clients
+
+        For in class use only. Does not lock object so
+        """
+        for game_response in game_responses:
+            for res_user, res_message in game_response:
+                if res_user in self.client_connections:
+                    await self.client_connections[res_user].send(res_message)
+
 
 server = GameServer()
 
@@ -105,17 +128,33 @@ async def client_coroutine(client, path):
             if message:
                 # Calls broadcast function to send message to all
                 #   broadcast(message_to_send, conn)
-                message_to_send = username + ": " + str(message)
-                await server.broadcast(message_to_send, username)
+                await server.input_to_game(username, message)
 
         except Exception as e:
             # Raised exception or connection closed:
             #   remove connection from list and end async thread
             print(e)
-            await server.remove(username)
+            await server.remove_client(username)
+            return
+
+async def game_update_coroutine():
+    """
+    Calls updates for game
+    """
+    while True:
+        try:
+            await asyncio.sleep(0.1)
+            await server.get_game_updates()
+
+        except Exception as e:
+            print(e)
             return
 
 # Start websockets server with client coroutine
 start_server = websockets.serve(client_coroutine, IP_address, Port)
-asyncio.get_event_loop().run_until_complete(start_server)
-asyncio.get_event_loop().run_forever()
+loop = asyncio.get_event_loop()
+loop.run_until_complete(asyncio.gather(
+    game_update_coroutine(),
+    start_server
+))
+loop.run_forever()
